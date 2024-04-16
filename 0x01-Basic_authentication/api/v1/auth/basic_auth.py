@@ -2,6 +2,8 @@
 """module: basic_auth
 """
 from api.v1.auth.auth import Auth
+from models.user import User
+from typing import TypeVar
 
 
 class BasicAuth(Auth):
@@ -53,3 +55,37 @@ class BasicAuth(Auth):
         if ':' not in decoded_base64_authorization_header:
             return (None, None)
         return tuple(decoded_base64_authorization_header.split(':', 1))
+    
+    def user_object_from_credentials(
+            self, user_email: str, user_pwd: str) -> TypeVar('User'):
+        """
+        user object from credentials
+        Args:
+            user_email: a string argument
+            user_pwd: a string argument
+        Return:
+            user object
+        """
+        if user_email is None or not isinstance(user_email, str):
+            return None
+        if user_pwd is None or not isinstance(user_pwd, str):
+            return None
+        try:
+            return User(email=user_email, password=user_pwd)
+        except Exception:
+            return None
+
+    def current_user(self, request=None) -> TypeVar('User'):
+        """
+        current user
+        Overloads Auth and retrieves the User instance for a request
+        Args:
+            request: a request object
+        Return:
+            a User instance
+        """
+        auth_header = self.authorization_header(request)
+        base64_header = self.extract_base64_authorization_header(auth_header)
+        decoded_header = self.decode_base64_authorization_header(base64_header)
+        user_email, user_pwd = self.extract_user_credentials(decoded_header)
+        return self.user_object_from_credentials(user_email, user_pwd)
