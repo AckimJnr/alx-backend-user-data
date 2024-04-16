@@ -37,7 +37,26 @@ def forbidden(error) -> str:
     return jsonify({"error": "Forbidden"}), 403
 
 
+@app.before_request
+def before_request() -> None:
+    """ Before request handler
+    """
+    if auth is None:
+        return
+    if auth.require_auth(request.path, ['/api/v1/status/',
+                                        '/api/v1/unauthorized/',
+                                        '/api/v1/forbidden/']):
+        if not auth.authorization_header(request):
+            abort(401)
+        if not auth.current_user(request):
+            abort(403)
+
+
 if __name__ == "__main__":
     host = getenv("API_HOST", "0.0.0.0")
     port = getenv("API_PORT", "5000")
+    auth = None
+    if os.getenv('AUTH_TYPE') == 'auth':
+        from api.v1.auth.auth import Auth
+        auth = Auth()
     app.run(host=host, port=port)
