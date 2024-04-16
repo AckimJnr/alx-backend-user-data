@@ -8,3 +8,4 @@ class BasicAuth(Auth):
     """
     Implements basic authentication
     """
+    pass
