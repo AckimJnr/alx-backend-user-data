@@ -4,6 +4,7 @@
 from api.v1.auth.auth import Auth
 from models.user import User
 from typing import TypeVar
+import base64
 
 
 class BasicAuth(Auth):
@@ -35,9 +36,12 @@ class BasicAuth(Auth):
                                 base64_authorization_header, str):
             return None
         try:
-            return base64_authorization_header.encode('utf-8').decode(
-                'base64')
-        except Exception:
+            # Decode base64 string
+            decoded_bytes = base64.b64decode(base64_authorization_header)
+            # Convert bytes to UTF-8 string
+            decoded_string = decoded_bytes.decode('utf-8')
+            return decoded_string
+        except (base64.binascii.Error, UnicodeDecodeError):
             return None
 
     def extract_user_credentials(
