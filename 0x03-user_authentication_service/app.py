@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ Main application file for the Flask API."""
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from auth import Auth
 
 app = Flask(__name__)
@@ -27,17 +27,17 @@ def users():
 
 
 @app.route('/sessions', methods=['POST'])
-def login(email: str, password: str) -> str:
-    """login user."""
+def login():
+    """Login user."""
     email = request.form.get('email')
     password = request.form.get('password')
     if AUTH.valid_login(email, password):
         session_id = AUTH.create_session(email)
-        return jsonify(
-            {"email": email,
-             "message": "logged in",
-             "session_id": session_id}), 200
-    return jsonify({"message": "wrong password"}), 401
+        response = jsonify({"email": email, "message": "logged in"})
+        response.set_cookie("session_id", session_id)
+        return response, 200
+    else:
+        abort(401)
 
 
 if __name__ == "__main__":
