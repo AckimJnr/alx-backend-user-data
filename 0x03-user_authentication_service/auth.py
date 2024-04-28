@@ -64,6 +64,24 @@ class Auth:
         except NoResultFound:
             return None
 
+    def get_user_from_session_id(self, session_id: str) -> User:
+        """Get user from session ID.
+
+        Args:
+            session_id: Session ID string.
+
+        Returns:
+            Corresponding User object or None if not found.
+        """
+        if session_id is None:
+            return None
+
+        try:
+            user = self._db.find_user_by(session_id=session_id)
+            return user
+        except NoResultFound:
+            return None
+
 
 def _generate_uuid() -> str:
     """ generate uuid
